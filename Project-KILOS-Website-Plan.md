@@ -24,6 +24,7 @@ This document outlines the development milestones, feature requirements, and tec
 - **Bootstrap** — Layout, components, and responsive grid
 - **localStorage** — Lightweight persistence for the BP log and weekly goals checklist, no backend needed for a pilot
 - **Hosting/Deployment** — Vercel — free and simple for a Bootstrap/vanilla-JS site
+- **Navigation pattern — "Claude-app" shell:** `index.html` holds a persistent shell (header, sidebar/nav, footer) that never reloads. Only the content area swaps when navigating between Home, About, Tracker, Emergency, and FAQs — each is an HTML fragment fetched and injected into the content container by `main.js`, rather than a separate full page load. This keeps nav state, greeting, and layout stable across views and feels closer to a native app than a traditional multi-page site.
 
 ## File Structure
 
@@ -32,17 +33,21 @@ KILOS/
 ├── assets/
 │   └── logo/
 │       └── kilos-logo.png 
-├── navigation/
-│   ├── abouthypertension.html
-│   ├── bptracker.html
-│   └── emergencyplan.html
+├── pages/
+│   ├── home.html          (content fragment, no header/nav/footer)
+│   ├── about.html
+│   ├── tracker.html
+│   ├── emergency.html
+│   └── faqs.html
 ├── scripts/
-│   └── main.js
+│   └── main.js            (router: fetches a view fragment into #app-content on nav click)
 ├── styles/
 │   └── main.css
-├── index.html
+├── index.html              (persistent shell: header, sidebar/nav, footer, #app-content)
 └── Project-KILOS-Website-Plan.md
 ```
+
+`index.html` is the only real "page" — it renders once and stays mounted. `views/*.html` are content-only fragments (no `<html>`/`<head>`/nav/footer of their own); `main.js` fetches the fragment matching the clicked nav item and swaps it into `#app-content`, so the header/sidebar/nav persist across navigation instead of reloading.
 
 ## Milestones
 
@@ -56,11 +61,13 @@ Sketch a simple wireframe per page: Home, About Hypertension (intro, complicatio
 
 ### 3. Base Layout & Navigation
 
-Build the HTML/Bootstrap skeleton: shared header, footer, and nav used across all pages. Nav should include Home, About Hypertension, Emergency Plan, and Blood Pressure Tracker. Fully build the Home page, About Hypertension page, and Blood Pressure Tracker page as the templates the rest will follow — since Blood Pressure Tracker introduces the name-based greeting, the input form + reading-based suggestion logic, and the on-device history list (via localStorage) that the rest of the site's interactivity depends on.
+Build the persistent app shell in `index.html`: header, sidebar/nav, footer, and a single `#app-content` container — this shell mounts once and never reloads. Nav should include Home, About Hypertension, Emergency Plan, and Blood Pressure Tracker. Write the lightweight `main.js` router that, on nav click (or hash change), fetches the matching HTML fragment from `views/` and injects it into `#app-content`, updating the active nav state — the "Claude-app pattern" of a fixed shell with a swappable content region instead of separate full-page loads.
+
+Fully build the Home, About Hypertension, and Blood Pressure Tracker fragments as the templates the rest will follow — since Blood Pressure Tracker introduces the name-based greeting, the input form + reading-based suggestion logic, and the on-device history list (via localStorage) that the rest of the site's interactivity depends on.
 
 ### 4. Core Content Pages
 
-Build out the DASH Diet Guide, Warning Signs & Normal BP Levels, and Emergency Action Plan pages using the shared template. Keep language simple and scannable for a community, non-clinical audience.
+Build out the DASH Diet Guide, Warning Signs & Normal BP Levels, and Emergency Action Plan as content fragments in `views/`, following the same shared shell and styling as the Milestone 3 templates. Keep language simple and scannable for a community, non-clinical audience.
 
 ### 5. Interactive Features
 
