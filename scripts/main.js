@@ -1,12 +1,7 @@
 /* Project K.I.L.O.S. - Shared Scripts */
 
 /* ============================================================
-   1. TAILWIND CONFIG (design tokens: colors, spacing, fonts)
-   Unchanged from before — must run BEFORE Tailwind CDN scans
-   the page's classes:
-     1. <script src="...tailwindcss..."></script>
-     2. <script src="scripts/main.js"></script>
-     3. rest of the page
+   1. TAILWIND CONFIG (unchanged)
    ============================================================ */
 tailwind.config = {
   darkMode: "class",
@@ -65,28 +60,11 @@ tailwind.config = {
         "on-tertiary-fixed": "#2b1512",
         "on-tertiary-fixed-variant": "#5c4440"
       },
-      borderRadius: {
-        DEFAULT: "0.25rem",
-        lg: "0.5rem",
-        xl: "0.75rem",
-        full: "9999px"
-      },
-      spacing: {
-        gutter: "16px",
-        "container-margin": "24px",
-        "stack-md": "24px",
-        "stack-sm": "12px",
-        "stack-lg": "48px",
-        base: "8px"
-      },
+      borderRadius: { DEFAULT: "0.25rem", lg: "0.5rem", xl: "0.75rem", full: "9999px" },
+      spacing: { gutter: "16px", "container-margin": "24px", "stack-md": "24px", "stack-sm": "12px", "stack-lg": "48px", base: "8px" },
       fontFamily: {
-        "headline-lg-mobile": ["Lexend"],
-        "data-display": ["Lexend"],
-        "headline-md": ["Lexend"],
-        "body-lg": ["Lexend"],
-        "label-caps": ["Inter"],
-        "body-md": ["Lexend"],
-        "headline-lg": ["Lexend"]
+        "headline-lg-mobile": ["Lexend"], "data-display": ["Lexend"], "headline-md": ["Lexend"],
+        "body-lg": ["Lexend"], "label-caps": ["Inter"], "body-md": ["Lexend"], "headline-lg": ["Lexend"]
       },
       fontSize: {
         "headline-lg-mobile": ["26px", { lineHeight: "32px", fontWeight: "700" }],
@@ -102,65 +80,71 @@ tailwind.config = {
 };
 
 /* ============================================================
-   2. ROUTER
-   One shell (index.html), four <template> blocks (one per page).
-   Navigating writes a hash (#/, #/about, #/tracker, #/emergency)
-   instead of loading a new document — the browser never reloads,
-   so #site-header / #site-bottom-nav stay mounted
-   and only #page-content's innerHTML is swapped.
+   2. ROUTER (now fetch-based, not template-clone-based)
+   Each route points at a separate HTML file under pages/.
+   render() fetches the file's markup and injects it into
+   #page-content. Fetched pages are cached in memory so
+   revisiting a page doesn't re-fetch it every time.
 
-   Hash routing (rather than pushState + fetch) is deliberate here:
-   it needs zero server config to work on any static host, and it
-   also works when the file is opened directly (file://) since
-   there's no fetch() of a second document involved.
+   Requires being served over http(s) — fetch() of local files
+   is blocked under file://. Fine for Live Preview / Vercel.
    ============================================================ */
 const ROUTES = {
-  "/": { page: "home", title: "Project K.I.L.O.S. - Home", template: "tpl-home" },
-  "/about": { page: "about", title: "About Hypertension - K.I.L.O.S.", template: "tpl-about" },
-  "/tracker": { page: "tracker", title: "BP Tracker - K.I.L.O.S.", template: "tpl-tracker" },
-  "/emergency": { page: "emergency", title: "Emergency Plan - K.I.L.O.S.", template: "tpl-emergency" },
-  "/faqs": { page: "faqs", title: "FAQs - K.I.L.O.S.", template: "tpl-faqs" }
+  "/": { page: "home", title: "Project K.I.L.O.S. - Home", file: "pages/home.html" },
+  "/about": { page: "about", title: "About Hypertension - K.I.L.O.S.", file: "pages/about.html" },
+  "/tracker": { page: "tracker", title: "BP Tracker - K.I.L.O.S.", file: "pages/tracker.html" },
+  "/emergency": { page: "emergency", title: "Emergency Plan - K.I.L.O.S.", file: "pages/emergency.html" },
+  "/faqs": { page: "faqs", title: "FAQs - K.I.L.O.S.", file: "pages/faqs.html" }
 };
+
+const pageCache = new Map(); // file path -> HTML string, avoids re-fetching on revisit
 
 function currentPath() {
   const hash = window.location.hash || "#/";
-  const path = hash.slice(1); // drop leading "#"
+  const path = hash.slice(1);
   return ROUTES[path] ? path : "/";
 }
 
-function render() {
+async function render() {
   const path = currentPath();
   const route = ROUTES[path];
   const mount = document.getElementById("page-content");
-  const tpl = document.getElementById(route.template);
-  if (!mount || !tpl) return;
+  if (!mount) return;
 
-  mount.innerHTML = "";
-  mount.appendChild(tpl.content.cloneNode(true));
-  document.title = route.title;
-  document.body.dataset.page = route.page;
+  try {
+    let html = pageCache.get(route.file);
+    if (!html) {
+      const res = await fetch(route.file);
+      if (!res.ok) throw new Error(`Failed to load ${route.file}: ${res.status}`);
+      html = await res.text();
+      pageCache.set(route.file, html);
+    }
 
-  // Header/bottom-nav are re-rendered (not re-mounted) so their
-  // active-link highlight updates to match the new page.
-  renderHeader();
-  renderBottomNav();
+    mount.innerHTML = html;
+    document.title = route.title;
+    document.body.dataset.page = route.page;
 
-  // Re-run per-page behavior. Cloning a <template> gives fresh DOM
-  // nodes with no listeners, so this must happen on every render,
-  // not just once on load.
-  if (route.page === "tracker") initBpForm();
-  if (route.page === "home") updateHomeGreeting();
+    // Header/bottom-nav re-rendered (not re-mounted) so active-link
+    // highlight updates to match the new page.
+    renderHeader();
+    renderBottomNav();
 
-  window.scrollTo({ top: 0, behavior: "instant" in window ? "instant" : "auto" });
+    // Re-run per-page behavior. Fresh innerHTML has no listeners
+    // attached, so this must happen on every render.
+    if (route.page === "tracker") initBpForm();
+    if (route.page === "home") updateHomeGreeting();
+
+    window.scrollTo({ top: 0, behavior: "instant" in window ? "instant" : "auto" });
+  } catch (err) {
+    mount.innerHTML = `<p class="text-error p-6">Sorry, this page could not be loaded. Please check your connection and try again.</p>`;
+    console.error(err);
+  }
 }
 
 window.addEventListener("hashchange", render);
 
 /* ============================================================
-   3. SHARED CHROME (header, bottom nav, footer)
-   Same templates as before, just pointed at hash routes instead
-   of separate .html files, and re-invokable (render() calls
-   renderHeader/renderBottomNav again on every navigation).
+   3. SHARED CHROME (header, bottom nav) — unchanged
    ============================================================ */
 (function () {
   const NAV_ITEMS = [
@@ -227,25 +211,13 @@ window.addEventListener("hashchange", render);
   </nav>`;
   };
 
-  window.renderFooter = function renderFooter() {
-    // Footer removed from the site — kept as a no-op so nothing
-    // breaks if something still calls it.
-  };
-
-  // Footer chrome never changes between routes, so it only needs to
-  // render once (unlike header/bottom-nav, which re-render on every
-  // navigation to update the active-link highlight).
   document.addEventListener("DOMContentLoaded", function () {
-    render(); // initial paint of #page-content + header/bottom-nav
+    render();
   });
 })();
 
 /* ============================================================
-   4. WELCOME MODAL (name capture + localStorage)
-   Shown automatically on first visit, and reusable afterward via
-   any [data-edit-name] pencil button (event delegation, since
-   those buttons live inside route templates that get re-cloned
-   on every navigation — a direct listener would be lost on swap).
+   4. WELCOME MODAL — unchanged
    ============================================================ */
 document.addEventListener("DOMContentLoaded", function () {
   const overlay = document.getElementById("welcome-modal-overlay");
@@ -254,6 +226,11 @@ document.addEventListener("DOMContentLoaded", function () {
   const input = document.getElementById("user-name-input");
   const okBtn = document.getElementById("modal-ok-btn");
   const skipBtn = document.getElementById("modal-skip-btn");
+  const clearBtn = document.getElementById("clear-name-btn");
+
+  function toggleClearBtn() {
+    clearBtn.classList.toggle("hidden", input.value.length === 0);
+  }
 
   function openModal() {
     input.value = localStorage.getItem("userName") || "";
@@ -270,12 +247,6 @@ document.addEventListener("DOMContentLoaded", function () {
   function closeModal() {
     overlay.classList.add("hidden");
     localStorage.setItem("hasVisited", "true");
-  }
-
-  const clearBtn = document.getElementById("clear-name-btn");
-
-  function toggleClearBtn() {
-    clearBtn.classList.toggle("hidden", input.value.length === 0);
   }
 
   input.addEventListener("input", toggleClearBtn);
@@ -305,8 +276,6 @@ document.addEventListener("DOMContentLoaded", function () {
     closeModal();
   });
 
-  // Delegated listener: catches pencil clicks on Home, Tracker,
-  // or any future page, regardless of route re-renders.
   document.addEventListener("click", (e) => {
     if (e.target.closest("[data-edit-name]")) {
       openModal();
@@ -315,11 +284,7 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 
 /* ============================================================
-   TIME-BASED GREETING + NAME DISPLAY
-   3:00–11:30  -> Magandang umaga (morning)
-   11:31–12:59 -> Magandang tanghali (midday)
-   1:00–5:59pm -> Magandang hapon (afternoon)
-   6:00pm–2:59 -> Magandang gabi (evening/night, wraps past midnight)
+   TIME-BASED GREETING + NAME DISPLAY — unchanged
    ============================================================ */
 function getTimeGreeting() {
   const now = new Date();
@@ -346,18 +311,13 @@ function updateTrackerGreeting() {
   el.textContent = name ? `${timeGreeting}, ${name}!` : `${timeGreeting}!`;
 }
 
-// Called after any name change (modal OK/Skip). Each updater
-// self-guards with querySelector, so calling both is safe even
-// though only one greeting exists on the current page.
 function refreshGreetings() {
   updateHomeGreeting();
   updateTrackerGreeting();
 }
 
 /* ============================================================
-   BP HISTORY (localStorage-backed, capped)
-   Newest entry goes to the front; once the list exceeds
-   MAX_HISTORY, the oldest entries fall off the end.
+   5. BP HISTORY — unchanged
    ============================================================ */
 const BP_HISTORY_KEY = "bpHistory";
 const MAX_HISTORY = 10;
@@ -437,12 +397,7 @@ function renderBpHistory() {
 }
 
 /* ============================================================
-   5. BP TRACKER FORM (visual stub only — does not persist yet)
-   TODO: replace with real localStorage-backed logging + dynamic
-   history list per the Development Plan, Milestone 5.
-
-   Called from render() every time the tracker template is
-   cloned in, since a fresh clone has no event listeners attached.
+   6. BP TRACKER FORM — unchanged
    ============================================================ */
 function initBpForm() {
   updateTrackerGreeting();
@@ -464,7 +419,7 @@ function initBpForm() {
 
     const history = getBpHistory();
     history.unshift({ systolic, diastolic, timestamp: new Date().toISOString() });
-    history.length = Math.min(history.length, MAX_HISTORY); // drop oldest past the cap
+    history.length = Math.min(history.length, MAX_HISTORY);
     saveBpHistory(history);
     renderBpHistory();
 
@@ -483,10 +438,7 @@ function initBpForm() {
 }
 
 /* ============================================================
-   6. FAQ ACCORDION
-   Delegated on document (not the buttons directly) since FAQ
-   items live inside a route <template> that gets re-cloned on
-   every navigation — same pattern as the edit-name pencil.
+   7. FAQ ACCORDION — unchanged
    ============================================================ */
 document.addEventListener("click", (e) => {
   const toggle = e.target.closest("[data-faq-toggle]");
