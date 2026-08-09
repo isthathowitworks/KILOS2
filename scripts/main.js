@@ -90,11 +90,11 @@ tailwind.config = {
    is blocked under file://. Fine for Live Preview / Vercel.
    ============================================================ */
 const ROUTES = {
-  "/": { page: "home", title: "Project K.I.L.O.S. - Home", file: "pages/home.html" },
-  "/about": { page: "about", title: "About Hypertension - K.I.L.O.S.", file: "pages/about.html" },
-  "/tracker": { page: "tracker", title: "BP Tracker - K.I.L.O.S.", file: "pages/tracker.html" },
-  "/emergency": { page: "emergency", title: "Emergency Plan - K.I.L.O.S.", file: "pages/emergency.html" },
-  "/faqs": { page: "faqs", title: "FAQs - K.I.L.O.S.", file: "pages/faqs.html" }
+  "/": { page: "home", title: "Home - K.I.L.O.S.", file: "pages/home.html" },
+  "/about": { page: "about", title: "About - K.I.L.O.S.", file: "pages/about.html" },
+  "/tracker": { page: "tracker", title: "Tracker - K.I.L.O.S.", file: "pages/tracker.html" },
+  "/emergency": { page: "emergency", title: "Emergency - K.I.L.O.S.", file: "pages/emergency.html" }
+  // "/faqs": { page: "faqs", title: "FAQs - K.I.L.O.S.", file: "pages/faqs.html" }
 };
 
 const pageCache = new Map(); // file path -> HTML string, avoids re-fetching on revisit
@@ -144,23 +144,23 @@ async function render() {
 window.addEventListener("hashchange", render);
 
 /* ============================================================
-   3. SHARED CHROME (header, bottom nav) — unchanged
+   3. SHARED CHROME (header, bottom nav)
    ============================================================ */
 (function () {
   const NAV_ITEMS = [
     { key: "home", label: "Home", icon: "home", path: "/" },
-    { key: "about", label: "About Hypertension", icon: "menu_book", path: "/about" },
-    { key: "tracker", label: "BP Tracker", icon: "monitor_heart", path: "/tracker" },
-    { key: "emergency", label: "Emergency Plan", icon: "emergency_share", path: "/emergency" },
-    { key: "faqs", label: "FAQs", icon: "quiz", path: "/faqs" }
+    { key: "about", label: "About", icon: "menu_book", path: "/about" },
+    { key: "tracker", label: "Tracker", icon: "monitor_heart", path: "/tracker" },
+    { key: "emergency", label: "Emergency", icon: "emergency_share", path: "/emergency" }
+    // { key: "faqs", label: "FAQs", icon: "quiz", path: "/faqs" }
   ];
 
   const BOTTOM_NAV_ITEMS = [
     { key: "home", label: "Home", icon: "home", path: "/" },
     { key: "about", label: "About", icon: "menu_book", path: "/about" },
     { key: "tracker", label: "Tracker", icon: "monitor_heart", path: "/tracker" },
-    { key: "emergency", label: "Emergency", icon: "emergency_share", path: "/emergency" },
-    { key: "faqs", label: "FAQs", icon: "quiz", path: "/faqs" }
+    { key: "emergency", label: "Emergency", icon: "emergency_share", path: "/emergency" }
+      // { key: "faqs", label: "FAQs", icon: "quiz", path: "/faqs" }
   ];
 
   window.renderHeader = function renderHeader() {
@@ -190,7 +190,31 @@ window.addEventListener("hashchange", render);
   </header>`;
   };
 
-window.renderBottomNav = function renderBottomNav() {
+  // --- 5-item version (kept as reference in case FAQs ever gets
+  //     split back out into its own nav item — tighter icon/label
+  //     sizing so 5 icons don't feel cramped on narrow phones) ---
+  // window.renderBottomNav = function renderBottomNav() {
+  //     const mount = document.getElementById("site-bottom-nav");
+  //     if (!mount) return;
+  //     const currentPage = document.body.dataset.page || "home";
+
+  //     const links = BOTTOM_NAV_ITEMS.map((item) => {
+  //       const active = item.key === currentPage;
+  //       const activeClasses = "bg-brand-maroon/15 dark:bg-brand-maroon/25 text-brand-maroon dark:text-brand-maroon";
+  //       const inactiveClasses = "text-on-surface-variant dark:text-surface-variant hover:bg-surface-variant dark:hover:bg-tertiary-container";
+  //       return `
+  //     <a class="flex-1 flex flex-col items-center justify-center ${active ? activeClasses : inactiveClasses} rounded-full px-1 py-1 transition-transform active:scale-90 duration-150" href="#${item.path}">
+  //       <span class="material-symbols-outlined text-[20px] mb-0.5"${active ? ' data-weight="fill"' : ""}>${item.icon}</span>
+  //       <span class="font-label-caps text-label-caps text-[9px] leading-tight">${item.label}</span>
+  //     </a>`;
+  //     }).join("");
+
+  //     mount.innerHTML = `
+  //   <nav class="fixed bottom-0 left-0 w-full z-50 flex items-center px-2 py-2 md:hidden bg-surface dark:bg-surface-container-low border-t border-outline-variant shadow-lg">${links}
+  //   </nav>`;
+  //   };
+
+  window.renderBottomNav = function renderBottomNav() {
     const mount = document.getElementById("site-bottom-nav");
     if (!mount) return;
     const currentPage = document.body.dataset.page || "home";
@@ -200,14 +224,14 @@ window.renderBottomNav = function renderBottomNav() {
       const activeClasses = "bg-brand-maroon/15 dark:bg-brand-maroon/25 text-brand-maroon dark:text-brand-maroon";
       const inactiveClasses = "text-on-surface-variant dark:text-surface-variant hover:bg-surface-variant dark:hover:bg-tertiary-container";
       return `
-    <a class="flex-1 flex flex-col items-center justify-center ${active ? activeClasses : inactiveClasses} rounded-full px-1 py-1 transition-transform active:scale-90 duration-150" href="#${item.path}">
-      <span class="material-symbols-outlined text-[20px] mb-0.5"${active ? ' data-weight="fill"' : ""}>${item.icon}</span>
-      <span class="font-label-caps text-label-caps text-[9px] leading-tight">${item.label}</span>
+    <a class="flex-1 flex flex-col items-center justify-center ${active ? activeClasses : inactiveClasses} rounded-full px-4 py-1 transition-transform active:scale-90 duration-150" href="#${item.path}">
+      <span class="material-symbols-outlined mb-1"${active ? ' data-weight="fill"' : ""}>${item.icon}</span>
+      <span class="font-label-caps text-label-caps text-[10px] leading-tight">${item.label}</span>
     </a>`;
     }).join("");
 
     mount.innerHTML = `
-  <nav class="fixed bottom-0 left-0 w-full z-50 flex items-center px-2 py-2 md:hidden bg-surface dark:bg-surface-container-low border-t border-outline-variant shadow-lg">${links}
+  <nav class="fixed bottom-0 left-0 w-full z-50 flex items-center px-4 py-3 md:hidden bg-surface dark:bg-surface-container-low border-t border-outline-variant shadow-lg">${links}
   </nav>`;
   };
 
