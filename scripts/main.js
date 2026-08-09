@@ -190,7 +190,7 @@ window.addEventListener("hashchange", render);
   </header>`;
   };
 
-  window.renderBottomNav = function renderBottomNav() {
+window.renderBottomNav = function renderBottomNav() {
     const mount = document.getElementById("site-bottom-nav");
     if (!mount) return;
     const currentPage = document.body.dataset.page || "home";
@@ -200,14 +200,14 @@ window.addEventListener("hashchange", render);
       const activeClasses = "bg-brand-maroon/15 dark:bg-brand-maroon/25 text-brand-maroon dark:text-brand-maroon";
       const inactiveClasses = "text-on-surface-variant dark:text-surface-variant hover:bg-surface-variant dark:hover:bg-tertiary-container";
       return `
-    <a class="flex flex-col items-center justify-center ${active ? activeClasses : inactiveClasses} rounded-full px-4 py-1 transition-transform active:scale-90 duration-150" href="#${item.path}">
-      <span class="material-symbols-outlined mb-1"${active ? ' data-weight="fill"' : ""}>${item.icon}</span>
-      <span class="font-label-caps text-label-caps text-[10px] leading-tight">${item.label}</span>
+    <a class="flex-1 flex flex-col items-center justify-center ${active ? activeClasses : inactiveClasses} rounded-full px-1 py-1 transition-transform active:scale-90 duration-150" href="#${item.path}">
+      <span class="material-symbols-outlined text-[20px] mb-0.5"${active ? ' data-weight="fill"' : ""}>${item.icon}</span>
+      <span class="font-label-caps text-label-caps text-[9px] leading-tight">${item.label}</span>
     </a>`;
     }).join("");
 
     mount.innerHTML = `
-  <nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 py-3 md:hidden bg-surface dark:bg-surface-container-low border-t border-outline-variant shadow-lg">${links}
+  <nav class="fixed bottom-0 left-0 w-full z-50 flex items-center px-2 py-2 md:hidden bg-surface dark:bg-surface-container-low border-t border-outline-variant shadow-lg">${links}
   </nav>`;
   };
 
