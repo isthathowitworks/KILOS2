@@ -264,6 +264,30 @@ function closeDashModal() {
 }
 
 /* ============================================================
+   3a2. CRISIS MODAL (Crisis readings only)
+   Same visual theme as the other status modals, but urgent
+   styling and a direct call-to-action to contact the BHW.
+   Manual close only — deliberately no auto-close, this is the
+   highest-risk tier and shouldn't be easy to dismiss by accident.
+   ============================================================ */
+function openCrisisModal(systolic, diastolic) {
+  const overlay = document.getElementById("crisis-modal-overlay");
+  if (!overlay) return;
+
+  document.querySelector("[data-crisis-reading]").textContent = `${systolic} / ${diastolic}`;
+
+  overlay.classList.remove("hidden");
+  drawAttentionToUrgentCard();
+}
+
+function closeCrisisModal() {
+  const overlay = document.getElementById("crisis-modal-overlay");
+  if (overlay) overlay.classList.add("hidden");
+  const form = document.getElementById("bpForm");
+  if (form) form.reset();
+}
+
+/* ============================================================
    3b. NORMAL MODAL (Normal readings only)
    Same visual theme as the DASH modal, but no PDF download.
    Manual close only — via the ISARA button or clicking outside
@@ -298,8 +322,7 @@ function closeNormalModal() {
    navigates away from /tracker mid-flow.
    ============================================================ */
 function resetTrackerTransientUI() {
-  const crisisState = document.getElementById("crisisState");
-  if (crisisState) crisisState.classList.add("hidden");
+  closeCrisisModal();
   closeDashModal();
   closeNormalModal();
 }
@@ -317,9 +340,10 @@ function initBpForm() {
   const form = document.getElementById("bpForm");
   if (!form) return;
 
-  const crisisState = document.getElementById("crisisState");
-  const dismissCrisisBtn = document.getElementById("dismissCrisisState");
   const clearHistoryBtn = document.querySelector("[data-clear-history]");
+
+  const crisisModalClose = document.getElementById("crisis-modal-close");
+  const crisisModalOverlay = document.getElementById("crisis-modal-overlay");
 
   const dashModalClose = document.getElementById("dash-modal-close");
   const dashModalOverlay = document.getElementById("dash-modal-overlay");
@@ -349,15 +373,17 @@ function initBpForm() {
     } else if (status.label === "Elevated" || status.label === "High") {
       openDashModal(status.label, systolic, diastolic);
     } else if (status.label === "Crisis") {
-      crisisState.classList.remove("hidden");
-      drawAttentionToUrgentCard();
+      openCrisisModal(systolic, diastolic);
     }
   });
 
-  if (dismissCrisisBtn) {
-    dismissCrisisBtn.addEventListener("click", () => {
-      crisisState.classList.add("hidden");
-      form.reset();
+  if (crisisModalClose) {
+    crisisModalClose.addEventListener("click", closeCrisisModal);
+  }
+
+  if (crisisModalOverlay) {
+    crisisModalOverlay.addEventListener("click", (e) => {
+      if (e.target === crisisModalOverlay) closeCrisisModal();
     });
   }
 

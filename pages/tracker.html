@@ -30,16 +30,6 @@
         BASAHIN ANG BP KO
       </button>
     </form>
-
-    <!-- Crisis Brief State — Crisis readings only (Hidden by default). Minimal, no tip, no countdown, manual-dismiss. -->
-    <div class="hidden absolute inset-0 bg-surface-container-low z-20 p-6 flex flex-col items-center justify-center text-center gap-4" id="crisisState">
-      <div class="w-16 h-16 bg-error-container rounded-full flex items-center justify-center text-error mb-2">
-        <span class="material-symbols-outlined text-3xl">check_circle</span>
-      </div>
-      <h3 class="font-headline-md text-headline-md text-on-surface">Na-record na.</h3>
-      <p class="text-on-surface-variant text-sm">Tingnan sa ibaba ang susunod na dapat gawin.</p>
-      <button class="mt-2 text-primary font-label-caps text-label-caps underline hover:text-surface-tint" id="dismissCrisisState">Sarado</button>
-    </div>
   </div>
 
   <!-- History Area (Bento Right) -->
@@ -121,6 +111,36 @@
     <div class="flex flex-col gap-3">
       <button id="confirm-delete-btn" class="w-full bg-error hover:bg-[#93000a] text-on-error font-label-caps text-label-caps py-4 rounded-lg transition-colors focus:ring-4 focus:ring-error/50">Oo, Burahin</button>
       <button id="cancel-delete-btn" class="w-full text-on-surface-variant font-label-caps text-label-caps py-2 hover:text-primary transition-colors">Kanselahin</button>
+    </div>
+  </div>
+</div>
+
+<!-- Crisis Modal — Crisis readings only. Same theme as the other status
+     modals, but urgent styling (error color) and a direct call-to-action
+     to contact the BHW, since this is the highest-risk tier. Manual close
+     only — no auto-close, this should not be easy to accidentally dismiss.
+     Content is populated by scripts/pages/tracker.js. -->
+<div id="crisis-modal-overlay" class="hidden fixed inset-0 z-[100] flex items-center justify-center bg-on-surface/40 backdrop-blur-sm p-4">
+  <div class="bg-surface rounded-xl shadow-xl max-w-[560px] w-full max-h-[85vh] overflow-y-auto flex flex-col gap-6 border border-error p-8">
+
+    <!-- Reading + status recap. -->
+    <div class="flex items-center gap-3">
+      <span class="material-symbols-outlined text-3xl text-error">priority_high</span>
+      <span class="font-headline-md text-headline-md text-on-surface" data-crisis-reading>-- / --</span>
+      <span class="ml-auto inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-label-caps bg-error text-on-error" data-crisis-status-badge>Crisis</span>
+    </div>
+
+    <div class="flex flex-col gap-3">
+      <h2 class="font-headline-md text-headline-md text-error">Mataas na Mataas ang BP Mo</h2>
+      <p class="text-on-surface-variant text-sm">Kung may nararamdamang matinding sakit ng ulo, paghihirap sa paghinga, o kirot sa dibdib, tumawag agad ng tulong. Huwag mag-antay.</p>
+    </div>
+
+    <div class="flex flex-col gap-3">
+      <a href="#/emergency" id="crisis-call-bhw" class="w-full bg-error hover:bg-[#93000a] text-on-error font-label-caps text-label-caps py-3 rounded-lg transition-colors flex items-center justify-center gap-2">
+        <span class="material-symbols-outlined text-lg">emergency</span>
+        Tawagan ang BHW
+      </a>
+      <button id="crisis-modal-close" class="w-full text-on-surface-variant font-label-caps text-label-caps py-2 hover:text-primary transition-colors">Isara</button>
     </div>
   </div>
 </div>
