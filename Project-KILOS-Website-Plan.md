@@ -27,23 +27,26 @@ This document outlines the development milestones, feature requirements, and tec
 - **Navigation pattern — "Claude-app" shell:** `index.html` holds a persistent shell (header, sidebar/nav, footer) that never reloads. Only the content area swaps when navigating between Home, About, Tracker, Emergency, and FAQs — each is an HTML fragment fetched and injected into the content container by `main.js`, rather than a separate full page load. This keeps nav state, greeting, and layout stable across views and feels closer to a native app than a traditional multi-page site.
 
 ## File Structure
-
 ```
 KILOS/
 ├── assets/
 │   └── logo/
-│       └── kilos-logo.png 
+│       └── kilos-logo.png
 ├── pages/
-│   ├── home.html          (content fragment, no header/nav/footer)
-│   ├── about.html
+│   ├── home.html          (content fragment, fetched into #page-content)
+│   ├── about.html          (includes FAQ section)
 │   ├── tracker.html
 │   ├── emergency.html
-│   └── faqs.html
+│   └── faqs.html           (standby — FAQ content currently lives inside about.html instead)
 ├── scripts/
-│   └── main.js            (router: fetches a view fragment into #app-content on nav click)
+│   ├── main.js              (site-wide: Tailwind config, router, header/bottom-nav, welcome modal, shared greeting helpers)
+│   └── pages/
+│       ├── tracker.js       (BP history, success-state countdown, tracker form + delete-confirm modal logic)
+│       ├── about.js         (FAQ accordion — FAQ content lives inside pages/about.html, no active FAQs route)
+│       └── faq.js           (standby — for a future standalone FAQs page, if split out from about.js)
 ├── styles/
 │   └── main.css
-├── index.html              (persistent shell: header, sidebar/nav, footer, #app-content)
+├── index.html               (persistent shell: header, #page-content mount, bottom-nav, welcome modal, delete-confirm modal)
 └── Project-KILOS-Website-Plan.md
 ```
 
