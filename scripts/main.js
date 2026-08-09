@@ -83,8 +83,8 @@ async function render() {
   const mount = document.getElementById("page-content");
   if (!mount) return;
 
-  // Stop any page-specific timers before swapping content out.
-  if (typeof clearSuccessCountdown === "function") clearSuccessCountdown();
+  // Close any page-specific open modals/states before swapping content out.
+  if (typeof resetTrackerTransientUI === "function") resetTrackerTransientUI();
 
   try {
     let html = pageCache.get(route.file);

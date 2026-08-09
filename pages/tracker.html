@@ -27,22 +27,18 @@
       </div>
       <button class="w-full bg-primary hover:bg-surface-tint text-on-primary font-label-caps text-label-caps rounded-full py-4 mt-4 transition-colors min-h-[56px] flex items-center justify-center gap-2" type="submit">
         <span class="material-symbols-outlined">save</span>
-        I-SAVE ANG RECORD
+        BASAHIN ANG BP KO
       </button>
     </form>
 
-    <!-- Success State (Hidden by default) -->
-    <div class="hidden absolute inset-0 bg-surface-container-low z-20 p-6 flex flex-col items-center justify-center text-center gap-4" id="successState">
-      <div class="w-16 h-16 bg-secondary-container rounded-full flex items-center justify-center text-on-secondary-container mb-2">
+    <!-- Crisis Brief State — Crisis readings only (Hidden by default). Minimal, no tip, no countdown, manual-dismiss. -->
+    <div class="hidden absolute inset-0 bg-surface-container-low z-20 p-6 flex flex-col items-center justify-center text-center gap-4" id="crisisState">
+      <div class="w-16 h-16 bg-error-container rounded-full flex items-center justify-center text-error mb-2">
         <span class="material-symbols-outlined text-3xl">check_circle</span>
       </div>
-      <h3 class="font-headline-md text-headline-md text-on-surface">Na-save na!</h3>
-      <div class="bg-surface p-4 rounded-lg border border-outline-variant w-full">
-        <p class="font-label-caps text-label-caps text-primary mb-1">Health Tip para sa'yo:</p>
-        <p class="text-on-surface-variant text-sm">Uminom ng mas maraming tubig at bawasan ang alat sa pagkain ngayon. Kaya mo 'to!</p>
-      </div>
-      <p class="text-sm text-on-surface-variant" data-countdown-text>Babalik sa loob ng <span data-countdown-num>5</span>...</p>
-      <button class="mt-2 text-primary font-label-caps text-label-caps underline hover:text-surface-tint" id="resetForm">Mag-log ulit ngayon</button>
+      <h3 class="font-headline-md text-headline-md text-on-surface">Na-record na.</h3>
+      <p class="text-on-surface-variant text-sm">Tingnan sa ibaba ang susunod na dapat gawin.</p>
+      <button class="mt-2 text-primary font-label-caps text-label-caps underline hover:text-surface-tint" id="dismissCrisisState">Sarado</button>
     </div>
   </div>
 
@@ -97,7 +93,7 @@
       </div>
     </div>
 
-    <!-- Urgent Action Card (toggled by scripts/main.js when a reading is in Crisis range) -->
+    <!-- Urgent Action Card (toggled by scripts/pages/tracker.js when a reading is in Crisis range) -->
     <div class="bg-error-container border-l-4 border-error rounded-r-xl p-6 shadow-sm flex flex-col sm:flex-row items-center gap-4 hidden" data-urgent-card>
       <span class="material-symbols-outlined text-error text-4xl">emergency</span>
       <div class="flex-grow">
@@ -125,6 +121,63 @@
     <div class="flex flex-col gap-3">
       <button id="confirm-delete-btn" class="w-full bg-error hover:bg-[#93000a] text-on-error font-label-caps text-label-caps py-4 rounded-lg transition-colors focus:ring-4 focus:ring-error/50">Oo, Burahin</button>
       <button id="cancel-delete-btn" class="w-full text-on-surface-variant font-label-caps text-label-caps py-2 hover:text-primary transition-colors">Kanselahin</button>
+    </div>
+  </div>
+</div>
+
+<!-- Normal Reading Modal — Normal readings only. Same theme as the DASH
+     modal, but no PDF download. Manual close only (ISARA button or
+     clicking outside) — no auto-close/countdown. Content is populated
+     by scripts/pages/tracker.js. -->
+<div id="normal-modal-overlay" class="hidden fixed inset-0 z-[100] flex items-center justify-center bg-on-surface/40 backdrop-blur-sm p-4">
+  <div class="bg-surface rounded-xl shadow-xl max-w-[560px] w-full max-h-[85vh] overflow-y-auto flex flex-col gap-6 border border-outline-variant p-8">
+
+    <!-- Reading + status recap. Checkmark icon alone = saved, no label text. -->
+    <div class="flex items-center gap-3">
+      <span class="material-symbols-outlined text-3xl text-on-secondary-container">check_circle</span>
+      <span class="font-headline-md text-headline-md text-on-surface" data-normal-reading>-- / --</span>
+      <span class="ml-auto inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-label-caps" data-normal-status-badge>Normal</span>
+    </div>
+
+    <div class="flex flex-col gap-3">
+      <div class="bg-surface-container-low p-4 rounded-lg border border-outline-variant flex flex-col gap-1">
+        <p class="font-label-caps text-label-caps text-primary">Health Tip para sa'yo:</p>
+        <p class="text-on-surface-variant text-sm">Ipagpatuloy ang pag-inom ng tubig at ang pagkain nang tama. Galing mo dyan!</p>
+      </div>
+    </div>
+
+    <button id="normal-modal-close" class="w-full text-on-surface-variant font-label-caps text-label-caps py-2 hover:text-primary transition-colors">Isara</button>
+  </div>
+</div>
+
+<!-- DASH Guidance Modal — Elevated & High readings only.
+     Content (title/body/PDF link) is populated by scripts/pages/tracker.js
+     based on BP category. Doubles as the save confirmation for these two
+     categories, so it fully replaces the successState block for them. -->
+<div id="dash-modal-overlay" class="hidden fixed inset-0 z-[100] flex items-center justify-center bg-on-surface/40 backdrop-blur-sm p-4">
+  <div class="bg-surface rounded-xl shadow-xl max-w-[560px] w-full max-h-[85vh] overflow-y-auto flex flex-col gap-6 border border-outline-variant p-8">
+
+    <!-- Reading + status recap. Checkmark icon alone = saved, no label text. -->
+    <div class="flex items-center gap-3">
+      <span class="material-symbols-outlined text-3xl" data-dash-icon>check_circle</span>
+      <span class="font-headline-md text-headline-md text-on-surface" data-dash-reading>-- / --</span>
+      <span class="ml-auto inline-flex items-center px-3 py-1 rounded-full text-xs font-label-caps" data-dash-status-badge>Status</span>
+    </div>
+
+    <!-- DASH guidance content, swapped per category by tracker.js -->
+    <div class="flex flex-col gap-3">
+      <h2 class="font-headline-md text-headline-md text-primary" data-dash-title>DASH Diet Guidance</h2>
+      <div class="text-on-surface-variant text-sm flex flex-col gap-2" data-dash-body>
+        <!-- populated dynamically -->
+      </div>
+    </div>
+
+    <div class="flex flex-col gap-3">
+      <a id="dash-download-link" href="#" download class="w-full text-center bg-primary border border-primary text-on-primary font-label-caps text-label-caps py-3 rounded-lg hover:bg-primary hover:text-on-primary transition-colors flex items-center justify-center gap-2">
+        <span class="material-symbols-outlined text-lg">download</span>
+        I-download ang DASH Guide (PDF)
+      </a>
+      <button id="dash-modal-close" class="w-full text-on-surface-variant font-label-caps text-label-caps py-2 hover:text-primary transition-colors">Isara</button>
     </div>
   </div>
 </div>
