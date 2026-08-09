@@ -50,7 +50,9 @@
     <div class="bg-surface border border-primary rounded-xl overflow-hidden flex-grow flex flex-col">
       <div class="p-6 border-b border-outline-variant   bg-surface-container-low flex justify-between items-center">
         <h2 class="font-headline-md text-headline-md text-primary">Recent History</h2>
-        <span class="material-symbols-outlined text-on-surface-variant">history</span>
+        <button type="button" data-clear-history class="text-on-surface-variant hover:text-error transition-colors" aria-label="Clear all history">
+          <span class="material-symbols-outlined">delete</span>
+        </button>
       </div>
 
       <!-- Static header, never scrolls -->
@@ -67,7 +69,7 @@
       </div>
 
       <!-- Only this table scrolls -->
-      <div class="overflow-x-auto overflow-y-auto max-h-[300px]">
+      <div class="overflow-x-auto overflow-y-auto min-h-[300px] max-h-[300px]">
         <table class="w-full text-left border-collapse table-fixed">
           <tbody class="font-body-md text-body-md text-on-surface" data-history-body>
             <tr>

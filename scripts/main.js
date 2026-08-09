@@ -399,7 +399,7 @@ function renderBpHistory() {
   if (history.length === 0) {
     tbody.innerHTML = `
       <tr>
-        <td colspan="3" class="p-6 text-center text-on-surface-variant">Wala pang naitatalang BP reading.</td>
+        <td colspan="3" class="p-6 text-center text-on-surface-variant align-middle" style="height: 300px;">Wala pang naitatalang BP reading.</td>
       </tr>`;
     return;
   }
@@ -433,6 +433,7 @@ function initBpForm() {
   const successState = document.getElementById("successState");
   const resetBtn = document.getElementById("resetForm");
   const urgentCard = document.querySelector("[data-urgent-card]");
+  const clearHistoryBtn = document.querySelector("[data-clear-history]");
 
   form.addEventListener("submit", (e) => {
     e.preventDefault();
@@ -459,6 +460,15 @@ function initBpForm() {
     successState.classList.add("hidden");
     form.reset();
   });
+
+  if (clearHistoryBtn) {
+    clearHistoryBtn.addEventListener("click", () => {
+      if (!confirm("Tanggalin lahat ng BP history? Hindi na ito mababawi.")) return;
+      saveBpHistory([]);
+      renderBpHistory();
+      if (urgentCard) urgentCard.classList.add("hidden");
+    });
+  }
 }
 
 /* ============================================================
