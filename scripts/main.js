@@ -169,7 +169,7 @@ window.addEventListener("hashchange", render);
     const links = BOTTOM_NAV_ITEMS.map((item) => {
       const active = item.key === currentPage;
       const activeClasses = "bg-brand-maroon/15 dark:bg-brand-maroon/25 text-brand-maroon dark:text-brand-maroon";
-      const inactiveClasses = "text-on-surface-variant dark:text-surface-variant hover:bg-surface-variant dark:hover:bg-tertiary-container";
+      const inactiveClasses = "text-on-surface-variant dark:text-surface-variant";
       return `
     <a class="flex-1 flex flex-col items-center justify-center ${active ? activeClasses : inactiveClasses} rounded-full px-4 py-1 transition-transform active:scale-90 duration-150" href="#${item.path}">
       <span class="material-symbols-outlined mb-1"${active ? ' data-weight="fill"' : ""}>${item.icon}</span>
